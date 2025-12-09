@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Datalayer.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +11,15 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseSqlServer(connectionString, b => b.MigrationsAssembly("API"))
 );
+
+// 3. Add controllers + FIX FOR 500 ERROR (THIS IS THE KEY LINE)
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // This ignores circular references (Product → Category → Products → ...)
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 
 
 // 3. Add controllers & swagger
